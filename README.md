@@ -1,4 +1,4 @@
-cloudflared tunnel --url http://localhost:
+cloudflared tunnel --url http://localhost:3000
 
 # Aura Backend
 
