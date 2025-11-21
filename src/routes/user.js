@@ -5,6 +5,7 @@ const personaController = require('../controllers/personaController');
 const matchingController = require('../controllers/matchingController');
 const swipeController = require('../controllers/swipeController');
 const voiceSearchController = require('../controllers/voiceSearchController');
+const feedController = require('../controllers/feedController');
 
 /**
  * @route GET /get-user-details
@@ -141,6 +142,19 @@ router.post('/voice-search', voiceSearchController.voiceSearch);
  * @access Public
  */
 router.post('/voice-search-text', voiceSearchController.voiceSearchWithTranscript);
+
+/**
+ * @route GET /feed
+ * @desc Get feed of casts from connected (matched) users
+ * Returns casts from all users who have mutually matched with the requesting user
+ * Casts are sorted by timestamp (most recent first)
+ * Optimized to minimize Neynar API calls by batching up to 100 FIDs per call
+ * @query {number} fid - Farcaster ID of the user requesting the feed (required)
+ * @query {number} limit - Maximum number of casts to return (optional, default: 25, max: 100)
+ * @query {string} cursor - Pagination cursor for next page (optional)
+ * @access Public
+ */
+router.get('/feed', feedController.getFeed);
 
 module.exports = router;
 

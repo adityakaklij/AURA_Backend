@@ -1,5 +1,6 @@
 const dbService = require('../services/dbService');
 const orchidDbService = require('../services/orchidDbService');
+const notificationService = require('../services/notificationService');
 const asyncHandler = require('../middleware/asyncHandler');
 
 /**
@@ -82,6 +83,21 @@ const recordSwipe = asyncHandler(async (req, res) => {
   let isMatch = false;
   if (action === 'like') {
     isMatch = await dbService.checkIfMatched(userFidNumber, targetFidNumber);
+    
+    // Send notifications asynchronously (don't block response)
+    if (isMatch) {
+      // Mutual match - notify both users
+      notificationService.notifyConnectionAccepted(userFidNumber, targetFidNumber)
+        .catch((err) => {
+          console.error('Error sending connection accepted notification:', err.message);
+        });
+    } else {
+      // Connection request - notify the target user
+      notificationService.notifyConnectionRequest(userFidNumber, targetFidNumber)
+        .catch((err) => {
+          console.error('Error sending connection request notification:', err.message);
+        });
+    }
   }
 
   res.status(200).json({
@@ -404,6 +420,14 @@ const acceptRequest = asyncHandler(async (req, res) => {
   let isMatch = false;
   if (action === 'accept') {
     isMatch = await dbService.checkIfMatched(userFidNumber, targetFidNumber);
+    
+    // Send notification if it's a mutual match
+    if (isMatch) {
+      notificationService.notifyConnectionAccepted(userFidNumber, targetFidNumber)
+        .catch((err) => {
+          console.error('Error sending connection accepted notification:', err.message);
+        });
+    }
   }
 
   // Reward points when request is accepted
